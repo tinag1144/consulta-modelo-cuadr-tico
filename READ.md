@@ -541,6 +541,13 @@ VM3 (Apache - 192.168.100.30)
         └── index.html   ← frontend rosita con fetch API
 ```
 
+¿Qué es el caché y para qué sirve?
+Redis es como una libretita en RAM. Cuando el backend calcula y = 2(5)² + 5(5) + 3 = 68, escribe resultado:5 → 68 en esa libretita. La próxima vez que alguien pregunte por x=5, en vez de calcular de vuelta, simplemente lee la libretita. Es ultrarrápido porque todo está en memoria, no en disco.
+
+¿Cómo se fusiona con el backend?
+El backend tiene dos caminos para el mismo endpoint /calcular. Primero pregunta a Redis (redis.get). Si Redis responde algo (cached !== null) → devuelve ese valor con fuente: "cache". Si Redis responde null → calcula con la fórmula, guarda en Redis con redis.set(..., 'EX', 3600) y devuelve con fuente: "calculo". Toda esa lógica son apenas 5 líneas de código.
+
+El TTL (Time To Live) es la parte "últimas n consultas" del enunciado. Con 'EX', 3600 le decís a Redis: "guardá esto por 1 hora, después borralo solo". Si quisieras guardar solo las últimas 10 consultas en vez de por tiempo, usarías una estructura llamada lista (LPUSH/LTRIM), pero el TTL es la forma más simple y práctica.
 ---
 
 *Alumna: Gonzalez, Agostina*
