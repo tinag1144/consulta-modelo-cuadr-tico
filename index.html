@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora con Cache </title>
+    <style>
+        :root {
+            --rosa-pastel: #ffe5ec; --rosa-medio: #ffb3c6; --rosa-fuerte: #ff7096; --rosa-oscuro: #ff477e; --texto: #4a1525;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif; background-color: var(--rosa-pastel); color: var(--texto);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0;
+        }
+        .container {
+            background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(255, 112, 150, 0.2);
+            width: 380px; text-align: center; border: 3px solid var(--rosa-medio);
+        }
+        h1 { color: var(--rosa-oscuro); font-size: 24px; }
+        input { width: 80%; padding: 12px; border: 2px solid var(--rosa-medio); border-radius: 10px; text-align: center; }
+        button { width: 88%; padding: 12px; background-color: var(--rosa-fuerte); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        button:hover { background-color: var(--rosa-oscuro); }
+        .btn-secundario { background-color: transparent; color: var(--rosa-fuerte); border: 2px solid var(--rosa-fuerte); }
+        .resultado-box { margin-top: 25px; padding: 15px; border-radius: 10px; background-color: var(--rosa-pastel); border: 1px dashed var(--rosa-fuerte); display: none; }
+        .badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-top: 10px; }
+        .hit  { background-color: #d4edda; color: #155724; }
+        .miss { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora</h1>
+        <div style="font-style: italic; color: var(--rosa-fuerte); margin-bottom: 25px;">y = 2x^2 + 5x + 3</div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: bold;">Ingresá el valor de X:</label>
+            <input type="number" id="valorX" value="5">
+        </div>
+        <button onclick="enviarCalculo()">Calcular ✨</button>
+        <button class="btn-secundario" onclick="limpiarCache()">Limpiar Caché 🧹</button>
+        <div id="resultadoBox" class="resultado-box">
+            <div style="font-size: 18px;">Resultado (Y): <strong id="resY">-</strong></div>
+            <div id="badgeFuente" class="badge"></div>
+            <p id="resMensaje" style="font-size: 13px; margin: 10px 0 0 0;"></p>
+        </div>
+    </div>
+    <script>
+        const API_URL = 'http://192.168.100.20:3000';
+
+        async function enviarCalculo() {
+            const x = document.getElementById('valorX').value;
+            if (!x) return alert('Por favor poné un número');
+            try {
+                const response = await fetch(`${API_URL}/calcular?x=${x}`);
+                const data = await response.json();
+                document.getElementById('resY').innerText = data.y;
+                document.getElementById('resMensaje').innerText = data.mensaje;
+                const badge = document.getElementById('badgeFuente');
+                badge.innerText = data.fuente;
+                badge.className = data.fuente === 'cache' ? 'badge hit' : 'badge miss';
+                document.getElementById('resultadoBox').style.display = 'block';
+            } catch (error) { alert('Error de conexión con el Backend'); }
+        }
+
+        async function limpiarCache() {
+            try {
+                const response = await fetch(`${API_URL}/cache/limpiar`);
+                const data = await response.json();
+                alert(data.mensaje);
+                document.getElementById('resultadoBox').style.display = 'none';
+            } catch (error) { alert('Error al limpiar el caché'); }
+        }
+    </script>
+</body>
+</html>
